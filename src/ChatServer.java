@@ -4,12 +4,10 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-public class ChatServer extends JFrame implements ActionListener {
+public class ChatServer extends JFrame {
 
     // GUI elements
     private JTextArea chatArea;
-    private JTextField chatInput;
-    private JButton sendButton;
     private JList<String> clientList;
     private DefaultListModel<String> clientListModel;
 
@@ -46,16 +44,6 @@ public class ChatServer extends JFrame implements ActionListener {
         setVisible(true); // make the JFrame visible
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == sendButton) { // check if the send button was clicked
-            String message = chatInput.getText().trim(); // get the text from the input field and remove leading and trailing whitespace
-            if (!message.equals("")) { // check if the message is not empty
-                broadcastMessage("Server", message); // broadcast the message to all connected clients
-                chatInput.setText(""); // clear the input field
-            }
-        }
-    }
-
     private void startServer() {
         try {
             serverSocket = new ServerSocket(9000); // create a server socket
@@ -81,13 +69,7 @@ public class ChatServer extends JFrame implements ActionListener {
     private synchronized void broadcastMessage(String sender, String message) {
         chatArea.append(sender + ": " + message + "\n"); // add the message to the chat area
         chatArea.setCaretPosition(chatArea.getDocument().getLength()); // set the chat area caret to the end of the text
-        for (int i = 0; i < clientListModel.size(); i++) { // loop through all the clients
-            String clientName = clientListModel.getElementAt(i); // get the name of the current client
-            ClientThread clientThread = (ClientThread) Thread.currentThread(); // get the current client thread
-            if (!clientThread.clientName.equals(clientName)) { // make sure the message is not sent to the client who sent it
-                    clientThread.sendMessage(sender, message); // send the message
-            }
-        }
+
     }
 
     private class ClientThread extends Thread {

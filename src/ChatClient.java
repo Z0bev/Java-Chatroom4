@@ -7,13 +7,13 @@ import java.util.*;
 
 public class ChatClient {
 
-    private JFrame frame; // declare a JFrame instance variable called frame
-    private JTextArea chatArea; // declare a JTextArea instance variable called chatArea
-    private JTextField messageField; // declare a JTextField instance variable called messageField
-    private JList<String> clientList; // declare a JList instance variable called clientList
-    private DefaultListModel<String> clientListModel; // declare a DefaultListModel instance variable called clientListModel
-    private PrintWriter output; // declare a PrintWriter instance variable called output
-    private String username; // declare a String instance variable called username
+    private JFrame frame;
+    private JTextArea chatArea;
+    private JTextField messageField;
+    private JList<String> clientList;
+    private DefaultListModel<String> clientListModel;
+    private PrintWriter output;
+    private String username;
 
     public ChatClient() {
         // Prompt the user for a username
