@@ -13,7 +13,6 @@ public class ChatServer extends JFrame {
 
     // Server elements
     private ServerSocket serverSocket;
-    private Thread serverThread;
     private boolean running;
 
     public ChatServer() {
@@ -21,19 +20,19 @@ public class ChatServer extends JFrame {
 
         // Set up GUI
         JPanel chatPanel = new JPanel(new BorderLayout());
-        chatArea = new JTextArea(10, 30); // create a text area for displaying messages
-        chatArea.setEditable(false); // disable editing of the text area
-        chatArea.setLineWrap(true); // enable line wrapping in the text area
-        chatPanel.add(new JScrollPane(chatArea), BorderLayout.CENTER); // add the text area to a scroll pane and add the pane to the chat panel
+        chatArea = new JTextArea(10, 30);
+        chatArea.setEditable(false);
+        chatArea.setLineWrap(true);
+        chatPanel.add(new JScrollPane(chatArea), BorderLayout.CENTER);
         JPanel inputPanel = new JPanel(new BorderLayout());
         JPanel clientPanel = new JPanel(new BorderLayout());
-        JLabel clientLabel = new JLabel("Connected Clients"); // create a label for the client list
-        clientPanel.add(clientLabel, BorderLayout.NORTH); // add the label to the client panel
+        JLabel clientLabel = new JLabel("Connected Clients");
+        clientPanel.add(clientLabel, BorderLayout.NORTH);
         clientListModel = new DefaultListModel<String>();
-        clientList = new JList<String>(clientListModel); // create a list for displaying connected clients
-        clientPanel.add(new JScrollPane(clientList), BorderLayout.CENTER); // add the client list to a scroll pane and add the pane to the client panel
-        chatPanel.add(clientPanel, BorderLayout.EAST); // add the client panel to the right side of the chat panel
-        getContentPane().add(chatPanel); // add the chat panel to the content pane of the JFrame
+        clientList = new JList<String>(clientListModel);
+        clientPanel.add(new JScrollPane(clientList), BorderLayout.CENTER);
+        chatPanel.add(clientPanel, BorderLayout.EAST);
+        getContentPane().add(chatPanel);
 
         // Set up server
         running = false;
@@ -111,11 +110,6 @@ public class ChatServer extends JFrame {
                 broadcastMessage("Server", clientName + " has left the chatroom."); // broadcast a message to all clients
             }
         }
-
-        public synchronized void sendMessage(String sender, String message) {
-            output.println(sender + ": " + message);
-        }
-
 
     }
 
