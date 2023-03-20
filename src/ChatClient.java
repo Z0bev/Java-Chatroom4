@@ -39,8 +39,8 @@ public class ChatClient {
         });
         messagePanel.add(sendButton, BorderLayout.EAST);
         panel.add(messagePanel, BorderLayout.SOUTH);
-        clientListModel = new DefaultListModel<String>(); // create a new DefaultListModel instance called clientListModel
-        clientList = new JList<String>(clientListModel); // create a new JList instance called clientList and pass the DefaultListModel as an argument
+        clientListModel = new DefaultListModel<>(); // create a new DefaultListModel instance called clientListModel
+        clientList = new JList<>(clientListModel); // create a new JList instance called clientList and pass the DefaultListModel as an argument
         JScrollPane clientScrollPane = new JScrollPane(clientList); // create a new JScrollPane instance called clientScrollPane and add the JList to it
         clientScrollPane.setPreferredSize(new Dimension(150, 0));
         panel.add(clientScrollPane, BorderLayout.EAST);
@@ -54,39 +54,12 @@ public class ChatClient {
             output = new PrintWriter(socket.getOutputStream(), true);
             output.println(username); // Send the username to the server
             addClient(username); // add the client to the client list
-            new Thread(() -> {
-                try {
-                    while (true) {
-                        String message = input.readLine(); // Read messages from the server
-                        if (message == null) {
-                            break;
-                        }
-                        updateChatArea(message); // Update the chat area with the received message
-                    }
-                } catch (IOException e) {
-                    System.out.println("Error receiving message from server: " + e.getMessage());
-                } finally {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        System.out.println("Error closing socket: " + e.getMessage());
-                    }
-                    System.exit(0);
-                }
-            }).start(); // Start a new thread to handle incoming messages
+
         } catch (IOException e) {
             System.out.println("Error connecting to server: " + e.getMessage());
             JOptionPane.showMessageDialog(frame, "Error connecting to server. Exiting...", "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-    }
-
-
-    private void updateChatArea(String message) {
-        SwingUtilities.invokeLater(() -> {
-            chatArea.append(message + "\n");
-            chatArea.setCaretPosition(chatArea.getDocument().getLength()); // Scroll to the bottom of the chat area
-        });
     }
 
     // Method to send a message to the server
