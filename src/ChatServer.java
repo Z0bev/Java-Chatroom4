@@ -77,7 +77,7 @@ public class ChatServer extends JFrame {
         private BufferedReader input;
         private PrintWriter output;
         private long lastActiveTime;
-        private long innactivityTime;
+
 
         public ClientThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
