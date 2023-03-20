@@ -77,11 +77,13 @@ public class ChatServer extends JFrame {
         private BufferedReader input;
         private PrintWriter output;
         private long lastActiveTime;
+        private long innactivityTime;
 
         public ClientThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
             this.clientName = "";
             this.lastActiveTime = System.currentTimeMillis();
+
         }
 
         public void run() {
@@ -92,7 +94,6 @@ public class ChatServer extends JFrame {
                 String line;
                 while ((line = input.readLine()) != null) {
                     lastActiveTime = System.currentTimeMillis(); // update the last active time of the client
-
                     if (clientName.equals("")) { // if the client name is not set yet
                         clientName = line.trim(); // set the client name to the received input
                         addClient(clientName); // add the client to the client list
@@ -105,6 +106,7 @@ public class ChatServer extends JFrame {
                 removeClient(clientName); // remove the client from the client list
                 broadcastMessage("Server", clientName + " has left the chatroom."); // broadcast a message to all clients
                 clientSocket.close(); // close the client socket
+
             } catch (IOException e) {
                 removeClient(clientName); // remove the client from the client list
                 broadcastMessage("Server", clientName + " has left the chatroom."); // broadcast a message to all clients

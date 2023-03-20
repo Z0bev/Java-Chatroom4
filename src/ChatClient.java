@@ -54,7 +54,6 @@ public class ChatClient {
             output = new PrintWriter(socket.getOutputStream(), true);
             output.println(username); // Send the username to the server
             addClient(username); // add the client to the client list
-
         } catch (IOException e) {
             System.out.println("Error connecting to server: " + e.getMessage());
             JOptionPane.showMessageDialog(frame, "Error connecting to server. Exiting...", "Error", JOptionPane.ERROR_MESSAGE);
