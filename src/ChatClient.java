@@ -53,6 +53,7 @@ public class ChatClient {
             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             output = new PrintWriter(socket.getOutputStream(), true);
             output.println(username); // Send the username to the server
+            addClient(username); // add the client to the client list
             new Thread(() -> {
                 try {
                     while (true) {
@@ -93,6 +94,10 @@ public class ChatClient {
         if (!message.isEmpty()) {
             output.println(message);
         }
+    }
+
+    private synchronized void addClient(String clientName) {
+        clientListModel.addElement(clientName); // add a client to the client list
     }
 
     // Main method to start the chat client
