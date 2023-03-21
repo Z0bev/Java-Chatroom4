@@ -120,10 +120,10 @@ public class ChatServer extends JFrame {
             public void run() {
                 long currentTime = System.currentTimeMillis();
                 long inactiveTime = currentTime - lastActiveTime;
-                if (inactiveTime >= 120000) { // if the client has been inactive for more than 1 minute (60000 milliseconds)
+                if (inactiveTime >= 30000) { // if the client has been inactive for more than 1 minute (60000 milliseconds)
                     try {
                         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                        out.println("You have been disconnected due to inactivity.");
+                        broadcastMessage("Server", clientName + " has been disconnected due to inactivity.");
                         clientSocket.close(); // close the client socket
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -134,7 +134,7 @@ public class ChatServer extends JFrame {
 
 
         private void startAFKTimer() {
-            afkTimer.schedule(new AFKTimerTask(), 0, 60000); // start the AFK timer to check for inactivity every minute
+            afkTimer.schedule(new AFKTimerTask(), 0, 15000); // start the AFK timer to check for inactivity every minute
         }
     }
 
