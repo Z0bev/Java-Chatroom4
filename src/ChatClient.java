@@ -4,9 +4,12 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Timer;
 
 public class ChatClient {
 
+
+    private static final int AFK_TIMEOUT = 120000;
     private JFrame frame;
     private JTextArea chatArea;
     private JTextField messageField;
@@ -15,9 +18,11 @@ public class ChatClient {
     private PrintWriter output;
     private String username;
 
+
     public ChatClient() {
         // Prompt the user for a username
         username = JOptionPane.showInputDialog(frame, "Enter username:", "Username", JOptionPane.PLAIN_MESSAGE);
+        startAFKTimer();
 
         // Create the GUI components
         frame = new JFrame(username); // create a new JFrame instance called frame and set the title to the username
@@ -67,6 +72,24 @@ public class ChatClient {
             output.println(message);
         }
     }
+
+    private void displayMessage(String message) {
+        chatArea.append(message + "\n");
+    }
+
+    private void startAFKTimer() {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                output.println("/afk");
+                timer.cancel();
+                System.exit(0);
+            }
+        }, AFK_TIMEOUT);
+    }
+
+
 
     private synchronized void addClient(String clientName) {
         clientListModel.addElement(clientName); // add a client to the client list
