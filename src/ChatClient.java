@@ -11,15 +11,12 @@ import java.util.regex.Pattern;
 
 public class ChatClient {
 
-
-
     private JFrame frame;
     private JTextArea chatArea;
     private JTextField messageField;
     private PrintWriter output;
     private String username;
     private UUID clientId;
-
 
     public ChatClient() {
         // Prompt the user for a username
@@ -81,8 +78,6 @@ public class ChatClient {
             output.println(message);
         }
     }
-
-
 
     // Main method to start the chat client
     public static void main(String[] args) {

@@ -6,7 +6,6 @@ import java.util.TimerTask;
 import java.util.Timer;
 import javax.swing.*;
 
-
 public class ChatServer extends JFrame {
 
     // GUI elements
@@ -132,13 +131,10 @@ public class ChatServer extends JFrame {
             }
         }
 
-
         private void startAFKTimer() {
             afkTimer.schedule(new AFKTimerTask(), 0, 30000); // start the AFK timer to check for inactivity every minute
         }
     }
-
-
 
     public static void main(String[] args) {
         ChatServer server = new ChatServer();
