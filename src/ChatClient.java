@@ -12,12 +12,10 @@ import java.util.regex.Pattern;
 public class ChatClient {
 
 
-    private static final int AFK_TIMEOUT = 120000;
+
     private JFrame frame;
     private JTextArea chatArea;
     private JTextField messageField;
-    private JList<String> clientList;
-    private DefaultListModel<String> clientListModel;
     private PrintWriter output;
     private String username;
     private UUID clientId;

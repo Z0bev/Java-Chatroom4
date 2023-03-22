@@ -71,7 +71,6 @@ public class ChatServer extends JFrame {
     private synchronized void broadcastMessage(String sender, String message) {
         chatArea.append(sender + ": " + message + "\n"); // add the message to the chat area
         chatArea.setCaretPosition(chatArea.getDocument().getLength()); // set the chat area caret to the end of the text
-
     }
 
     private class ClientThread extends Thread {
