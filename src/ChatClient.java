@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Timer;
+import java.util.UUID;
 
 public class ChatClient {
 
@@ -17,12 +18,15 @@ public class ChatClient {
     private DefaultListModel<String> clientListModel;
     private PrintWriter output;
     private String username;
+    private UUID clientId;
 
 
     public ChatClient() {
         // Prompt the user for a username
         username = JOptionPane.showInputDialog(frame, "Enter username:", "Username", JOptionPane.PLAIN_MESSAGE);
 
+        // Generate a UUID for the client
+        clientId = UUID.randomUUID();
 
         // Create the GUI components
         frame = new JFrame(username); // create a new JFrame instance called frame and set the title to the username
@@ -53,6 +57,7 @@ public class ChatClient {
             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             output = new PrintWriter(socket.getOutputStream(), true);
             output.println(username); // Send the username to the server
+            output.println(clientId);//print out UUID
         } catch (IOException e) {
             System.out.println("Error connecting to server: " + e.getMessage());
             JOptionPane.showMessageDialog(frame, "Error connecting to server. Exiting...", "Error", JOptionPane.ERROR_MESSAGE);
