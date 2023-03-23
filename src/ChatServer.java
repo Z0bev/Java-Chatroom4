@@ -26,7 +26,6 @@ public class ChatServer extends JFrame {
         chatArea.setEditable(false);
         chatArea.setLineWrap(true);
         chatPanel.add(new JScrollPane(chatArea), BorderLayout.CENTER);
-        JPanel inputPanel = new JPanel(new BorderLayout());
         JPanel clientPanel = new JPanel(new BorderLayout());
         JLabel clientLabel = new JLabel("Connected Clients");
         clientPanel.add(clientLabel, BorderLayout.NORTH);
