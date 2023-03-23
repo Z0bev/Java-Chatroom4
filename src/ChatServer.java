@@ -59,12 +59,12 @@ public class ChatServer extends JFrame {
         }
     }
 
-    private synchronized void addClient(String clientName) {
-        clientListModel.addElement(clientName); // add a client to the client list
+    private synchronized void addClient(String username) {
+        clientListModel.addElement(username); // add a client to the client list
     }
 
-    private synchronized void removeClient(String clientName) {
-        clientListModel.removeElement(clientName); // remove a client from the client list
+    private synchronized void removeClient(String username) {
+        clientListModel.removeElement(username); // remove a client from the client list
     }
 
     private synchronized void broadcastMessage(String sender, String message) {
@@ -74,7 +74,7 @@ public class ChatServer extends JFrame {
 
     private class ClientThread extends Thread {
         private Socket clientSocket;
-        private String clientName;
+        private String username;
         private BufferedReader input;
         private PrintWriter output;
         private long lastActiveTime;
@@ -82,7 +82,7 @@ public class ChatServer extends JFrame {
 
         public ClientThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
-            this.clientName = "";
+            this.username = "";
             this.lastActiveTime = System.currentTimeMillis();
             this.afkTimer = new Timer();
             startAFKTimer();
@@ -96,22 +96,22 @@ public class ChatServer extends JFrame {
                 String line;
                 while ((line = input.readLine()) != null) {
                     lastActiveTime = System.currentTimeMillis(); // update the last active time of the client
-                    if (clientName.equals("")) { // if the client name is not set yet
-                        clientName = line.trim(); // set the client name to the received input
-                        addClient(clientName); // add the client to the client list
-                        broadcastMessage("Server", clientName + " has joined the chatroom."); // broadcast a message to all clients
+                    if (username.equals("")) { // if the client name is not set yet
+                        username = line.trim(); // set the client name to the received input
+                        addClient(username); // add the client to the client list
+                        broadcastMessage("Server", username + " has joined the chatroom."); // broadcast a message to all clients
                     } else {
-                        broadcastMessage(clientName, line); // broadcast the client's message to all clients
+                        broadcastMessage(username, line); // broadcast the client's message to all clients
                     }
                 }
 
-                removeClient(clientName); // remove the client from the client list
-                broadcastMessage("Server", clientName + " has left the chatroom."); // broadcast a message to all clients
+                removeClient(username); // remove the client from the client list
+                broadcastMessage("Server", username + " has left the chatroom."); // broadcast a message to all clients
                 clientSocket.close(); // close the client socket
 
             } catch (IOException e) {
-                removeClient(clientName); // remove the client from the client list
-                broadcastMessage("Server", clientName + " has left the chatroom."); // broadcast a message to all clients
+                removeClient(username); // remove the client from the client list
+                broadcastMessage("Server", username + " has left the chatroom."); // broadcast a message to all clients
             }
         }
 
@@ -122,7 +122,7 @@ public class ChatServer extends JFrame {
                 if (inactiveTime >= 120000) { // if the client has been inactive for more than 1 minute (60000 milliseconds)
                     try {
                         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                        broadcastMessage("Server", clientName + " has been disconnected due to inactivity.");
+                        broadcastMessage("Server", username + " has been disconnected due to inactivity.");
                         clientSocket.close(); // close the client socket
                     } catch (IOException e) {
                         e.printStackTrace();
