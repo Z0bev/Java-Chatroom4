@@ -53,16 +53,10 @@ public class ChatClient {
             sendButton.addActionListener(e -> {
                 String message = messageField.getText();
                 if (!message.isEmpty()) {
-                    if (message.startsWith("@")) {
-                        String recipient = (String) clientList.getSelectedItem();
-                        if (recipient != null) {
-                            sendMessage(message, recipient);
-                        }
-                    } else {
-                        sendMessage(message, "all");
+                    sendMessage(message);
                     }
                     messageField.setText(""); // clear the text from the JTextField
-                }
+
             });
             messagePanel.add(sendButton, BorderLayout.EAST);
             // Add a JComboBox for selecting the recipient
@@ -120,7 +114,7 @@ public class ChatClient {
     }
 
     // Method to send a message to the server
-    private void sendMessage(String message, String recipient) {
+    private void sendMessage(String message) {
         if (!message.isEmpty()) {
             output.println(message);
         }

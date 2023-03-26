@@ -13,12 +13,29 @@ public class ChatServer {
     }
 
     private void broadcastMessage(String message, ClientHandler sender) {
-        for (ClientHandler client : clientHandlers) {
-            if (client != sender) {
+        System.out.println("broadcastMessage");
+        String senderMessage = message.split(":")[1].trim();
+        System.out.println(message);
+        System.out.println(senderMessage);
+        if (senderMessage.startsWith("@")) {
+            String recipientUsername = (String) senderMessage.split(" ")[0].trim().substring(1);
+            System.out.println(recipientUsername + " recipient");
+            if (recipientUsername != null) {
+                ClientHandler recipientHandler = clientHandlers.stream().filter(client -> client.getUsername().equals(recipientUsername)).findFirst().orElse(null);
+                if (recipientHandler != null) {
+                    recipientHandler.sendMessage(message);
+                    sender.sendMessage(message);
+                } else {
+                    sender.sendMessage("User " + recipientUsername + " not found");
+                }
+            }
+        } else {
+            for (ClientHandler client : clientHandlers) {
                 client.sendMessage(message);
             }
         }
     }
+
 
     private void broadcastClientsList() {
         String clients = "CLIENTS:";
