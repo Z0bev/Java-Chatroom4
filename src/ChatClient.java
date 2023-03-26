@@ -59,13 +59,6 @@ public class ChatClient {
 
             });
             messagePanel.add(sendButton, BorderLayout.EAST);
-            // Add a JComboBox for selecting the recipient
-            JPanel clientPanel = new JPanel();
-            clientList = new JComboBox<>();
-            clientPanel.add(new JLabel("Send to: "));
-            clientPanel.add(clientList);
-            messagePanel.add(clientPanel, BorderLayout.NORTH);
-            panel.add(messagePanel, BorderLayout.SOUTH);
             frame.add(panel); // add the panel to the JFrame
             frame.setVisible(true); // set the JFrame to be visible
             panel.add(messagePanel, BorderLayout.SOUTH);
@@ -78,16 +71,7 @@ public class ChatClient {
                 output = new PrintWriter(socket.getOutputStream(), true);
                 output.println(username); // Send the username to the server
                 output.println(clientId); //print out UUID
-                String activeClients = input.readLine();
-                if (activeClients != null && !activeClients.isEmpty()) {
-                    String[] clientNames = activeClients.split(",");
-                    clientList.addItem("all");
-                    for (String name : clientNames) {
-                        if (!name.equals(username)) {
-                            clientList.addItem(name);
-                        }
-                    }
-                }
+
 
                 // start a new thread to listen for messages from the server
                 new Thread(new Runnable() {

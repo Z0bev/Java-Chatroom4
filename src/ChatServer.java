@@ -38,7 +38,7 @@ public class ChatServer {
 
 
     private void broadcastClientsList() {
-        String clients = "CLIENTS:";
+        String clients = "ACTIVE USERS:";
         for (ClientHandler client : clientHandlers) {
             clients += " " + client.getUsername();
         }
@@ -124,7 +124,7 @@ public class ChatServer {
                     if (message.equals("/quit")) {
                         break;
                     }
-                    server.broadcastMessage(clientId + " " + username + ": " + message, this);
+                    server.broadcastMessage(username + ": " + message, this);
                 }
 
                 // Remove the client from the clientHandlers list
