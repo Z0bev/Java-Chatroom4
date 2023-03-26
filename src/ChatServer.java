@@ -1,142 +1,128 @@
 import java.io.*;
 import java.net.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.TimerTask;
-import java.util.Timer;
-import javax.swing.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class ChatServer extends JFrame {
+public class ChatServer {
 
-    // GUI elements
-    private JTextArea chatArea;
-    private JList<String> clientList;
-    private DefaultListModel<String> clientListModel;
-
-    // Server elements
-    private ServerSocket serverSocket;
-    private boolean running;
+    private ArrayList<ClientHandler> clientHandlers;
 
     public ChatServer() {
-        super("Java Chatroom Server");
-
-        // Set up GUI
-        JPanel chatPanel = new JPanel(new BorderLayout());
-        chatArea = new JTextArea(10, 30);
-        chatArea.setEditable(false);
-        chatArea.setLineWrap(true);
-        chatPanel.add(new JScrollPane(chatArea), BorderLayout.CENTER);
-        JPanel clientPanel = new JPanel(new BorderLayout());
-        JLabel clientLabel = new JLabel("Connected Clients");
-        clientPanel.add(clientLabel, BorderLayout.NORTH);
-        clientListModel = new DefaultListModel<String>();
-        clientList = new JList<String>(clientListModel);
-        clientPanel.add(new JScrollPane(clientList), BorderLayout.CENTER);
-        chatPanel.add(clientPanel, BorderLayout.EAST);
-        getContentPane().add(chatPanel);
-
-        // Set up server
-        running = false;
-        serverSocket = null;
-
-        setSize(600, 300); // set the size of the JFrame
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // set the close operation of the JFrame
-        setVisible(true); // make the JFrame visible
+        clientHandlers = new ArrayList<>();
     }
 
-    private void startServer() {
+    private void broadcastMessage(String message, ClientHandler sender) {
+        for (ClientHandler client : clientHandlers) {
+            if (client != sender) {
+                client.sendMessage(message);
+            }
+        }
+    }
+
+    private void broadcastClientsList() {
+        String clients = "CLIENTS:";
+        for (ClientHandler client : clientHandlers) {
+            clients += " " + client.getUsername();
+        }
+        for (ClientHandler client : clientHandlers) {
+            client.sendMessage(clients);
+        }
+    }
+
+    public void start(int port) {
         try {
-            serverSocket = new ServerSocket(9000); // create a server socket
-            running = true;
-            while (running) { // continuously accept new client connections
-                Socket clientSocket = serverSocket.accept(); // accept a new client connection
-                ClientThread clientThread = new ClientThread(clientSocket); // create a new thread for the client
-                clientThread.start(); // start the thread
+            ServerSocket serverSocket = new ServerSocket(port);
+            System.out.println("Chat server started on port " + port);
+
+            while (true) {
+                System.out.println("Waiting for clients to connect...");
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Client connected from " + clientSocket.getInetAddress().getHostAddress());
+                ClientHandler clientHandler = new ClientHandler(clientSocket, this);
+                clientHandlers.add(clientHandler);
+                Thread t = new Thread(clientHandler);
+                t.start();
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private synchronized void addClient(String username) {
-        clientListModel.addElement(username); // add a client to the client list
-    }
-
-    private synchronized void removeClient(String username) {
-        clientListModel.removeElement(username); // remove a client from the client list
-    }
-
-    private synchronized void broadcastMessage(String sender, String message) {
-        chatArea.append(sender + ": " + message + "\n"); // add the message to the chat area
-        chatArea.setCaretPosition(chatArea.getDocument().getLength()); // set the chat area caret to the end of the text
-    }
-
-    private class ClientThread extends Thread {
-        private Socket clientSocket;
-        private String username;
-        private BufferedReader input;
-        private PrintWriter output;
-        private long lastActiveTime;
-        private Timer afkTimer;
-
-        public ClientThread(Socket clientSocket) {
-            this.clientSocket = clientSocket;
-            this.username = "";
-            this.lastActiveTime = System.currentTimeMillis();
-            this.afkTimer = new Timer();
-            startAFKTimer();
-        }
-
-        public void run() {
-            try {
-                input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                output = new PrintWriter(clientSocket.getOutputStream(), true);
-
-                String line;
-                while ((line = input.readLine()) != null) {
-                    lastActiveTime = System.currentTimeMillis(); // update the last active time of the client
-                    if (username.equals("")) { // if the client name is not set yet
-                        username = line.trim(); // set the client name to the received input
-                        addClient(username); // add the client to the client list
-                        broadcastMessage("Server", username + " has joined the chatroom."); // broadcast a message to all clients
-                    } else {
-                        broadcastMessage(username, line); // broadcast the client's message to all clients
-                    }
-                }
-
-                removeClient(username); // remove the client from the client list
-                broadcastMessage("Server", username + " has left the chatroom."); // broadcast a message to all clients
-                clientSocket.close(); // close the client socket
-
-            } catch (IOException e) {
-                removeClient(username); // remove the client from the client list
-                broadcastMessage("Server", username + " has left the chatroom."); // broadcast a message to all clients
-            }
-        }
-
-        private class AFKTimerTask extends TimerTask {
-            public void run() {
-                long currentTime = System.currentTimeMillis();
-                long inactiveTime = currentTime - lastActiveTime;
-                if (inactiveTime >= 120000) { // if the client has been inactive for more than 1 minute (60000 milliseconds)
-                    try {
-                        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                        broadcastMessage("Server", username + " has been disconnected due to inactivity.");
-                        clientSocket.close(); // close the client socket
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
-        private void startAFKTimer() {
-            afkTimer.schedule(new AFKTimerTask(), 0, 30000); // start the AFK timer to check for inactivity every minute
+            System.out.println("Error starting server: " + e.getMessage());
         }
     }
 
     public static void main(String[] args) {
         ChatServer server = new ChatServer();
-        server.startServer(); // start the server
+        server.start(9000);
+    }
+
+    private class ClientHandler implements Runnable {
+        private Socket socket;
+        private BufferedReader input;
+        private PrintWriter output;
+        private String username;
+        private UUID clientId;
+        private ChatServer server;
+
+        public ClientHandler(Socket socket, ChatServer server) {
+            this.socket = socket;
+            this.server = server;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void sendMessage(String message) {
+            output.println(message);
+        }
+
+        public void run() {
+            try {
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                output = new PrintWriter(socket.getOutputStream(), true);
+
+                // Prompt the user for a username
+                boolean validUsername = false;
+                while (!validUsername) {
+                    username = input.readLine();
+                    Pattern p = Pattern.compile("^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$");
+                    Matcher m = p.matcher(username);
+                    if (!m.find()) {
+                        output.println("INVALID USERNAME");
+                    } else {
+                        validUsername = true;
+                    }
+                }
+
+                // Generate a UUID for the client
+                clientId = UUID.fromString(input.readLine());
+
+                // Send a welcome message to the client
+                output.println("Welcome to the chat, " + username + "!");
+
+                // Broadcast the clients list to all clients
+                server.broadcastClientsList();
+
+                String message;
+                while ((message = input.readLine()) != null) {
+                    if (message.equals("/quit")) {
+                        break;
+                    }
+                    server.broadcastMessage(clientId + " " + username + ": " + message, this);
+                }
+
+                // Remove the client from the clientHandlers list
+                clientHandlers.remove(this);
+
+                // Broadcast the clients list to all clients
+                server.broadcastClientsList();
+
+                // Close the socket, input and output streams
+                socket.close();
+                input.close();
+                output.close();
+            } catch (IOException e) {
+                System.out.println("Error handling client: " + e.getMessage());
+            }
+        }
     }
 }

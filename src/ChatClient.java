@@ -1,13 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.net.*;
-import java.util.*;
-import java.util.Timer;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class ChatClient {
 
@@ -15,8 +13,10 @@ public class ChatClient {
     private JTextArea chatArea;
     private JTextField messageField;
     private PrintWriter output;
+    private BufferedReader input;
     private String username;
     private UUID clientId;
+    private JComboBox<String> clientList;
 
     public ChatClient() {
         // Prompt the user for a username
@@ -31,6 +31,7 @@ public class ChatClient {
                 validUsername = true;
             }
         }
+
         if (validUsername) {
             // Generate a UUID for the client
             clientId = UUID.randomUUID();
@@ -50,21 +51,66 @@ public class ChatClient {
             JButton sendButton = new JButton("Send");
             // add an ActionListener to the sendButton
             sendButton.addActionListener(e -> {
-                sendMessage(messageField.getText()); // call the sendMessage method with the text from the JTextField as an argument
-                messageField.setText(""); // clear the text from the JTextField
+                String message = messageField.getText();
+                if (!message.isEmpty()) {
+                    if (message.startsWith("@")) {
+                        String recipient = (String) clientList.getSelectedItem();
+                        if (recipient != null) {
+                            sendMessage(message, recipient);
+                        }
+                    } else {
+                        sendMessage(message, "all");
+                    }
+                    messageField.setText(""); // clear the text from the JTextField
+                }
             });
             messagePanel.add(sendButton, BorderLayout.EAST);
+            // Add a JComboBox for selecting the recipient
+            JPanel clientPanel = new JPanel();
+            clientList = new JComboBox<>();
+            clientPanel.add(new JLabel("Send to: "));
+            clientPanel.add(clientList);
+            messagePanel.add(clientPanel, BorderLayout.NORTH);
             panel.add(messagePanel, BorderLayout.SOUTH);
             frame.add(panel); // add the panel to the JFrame
             frame.setVisible(true); // set the JFrame to be visible
-
+            panel.add(messagePanel, BorderLayout.SOUTH);
+            frame.add(panel); // add the panel to the JFrame
+            frame.setVisible(true); // set the JFrame to be visible
             // Connect to the server and start listening for messages
             try {
                 Socket socket = new Socket("localhost", 9000); // Connect to the server on localhost:9000
-                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 output = new PrintWriter(socket.getOutputStream(), true);
                 output.println(username); // Send the username to the server
-                output.println(clientId);//print out UUID
+                output.println(clientId); //print out UUID
+                String activeClients = input.readLine();
+                if (activeClients != null && !activeClients.isEmpty()) {
+                    String[] clientNames = activeClients.split(",");
+                    clientList.addItem("all");
+                    for (String name : clientNames) {
+                        if (!name.equals(username)) {
+                            clientList.addItem(name);
+                        }
+                    }
+                }
+
+                // start a new thread to listen for messages from the server
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            while (true) {
+                                String message = input.readLine();
+                                if (message != null) {
+                                    chatArea.append(message + "\n");
+                                }
+                            }
+                        } catch (IOException e) {
+                            System.out.println("Error reading input: " + e.getMessage());
+                        }
+                    }
+                }).start();
             } catch (IOException e) {
                 System.out.println("Error connecting to server: " + e.getMessage());
                 JOptionPane.showMessageDialog(frame, "Error connecting to server. Exiting...", "Error", JOptionPane.ERROR_MESSAGE);
@@ -72,8 +118,9 @@ public class ChatClient {
             }
         }
     }
+
     // Method to send a message to the server
-    private void sendMessage(String message) {
+    private void sendMessage(String message, String recipient) {
         if (!message.isEmpty()) {
             output.println(message);
         }
