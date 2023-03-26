@@ -13,10 +13,27 @@ public class ChatServer {
     }
 
     private void broadcastMessage(String message, ClientHandler sender) {
-        System.out.println("broadcastMessage");
         String senderMessage = message.split(":")[1].trim();
-        System.out.println(message);
-        System.out.println(senderMessage);
+        if (senderMessage.startsWith("/")) {
+            String command = (String) senderMessage.split(" ")[0].trim().substring(1);
+            System.out.println(command + " command");
+            if (command != null) {
+                if (command.equals("quit")) {
+                    clientHandlers.remove(sender);
+                    broadcastClientsList();
+                    sender.sendMessage("QUIT");
+                    return;
+                }
+                if (command.equals("list")) {
+                    String clients = "ACTIVE USERS:";
+                    for (ClientHandler client : clientHandlers) {
+                        clients += " " + client.getUsername();
+                    }
+                    sender.sendMessage(clients);
+                    return;
+                }
+            }
+        }
         if (senderMessage.startsWith("@")) {
             String recipientUsername = (String) senderMessage.split(" ")[0].trim().substring(1);
             System.out.println(recipientUsername + " recipient");
@@ -35,7 +52,6 @@ public class ChatServer {
             }
         }
     }
-
 
     private void broadcastClientsList() {
         String clients = "ACTIVE USERS:";
@@ -115,15 +131,14 @@ public class ChatServer {
 
                 // Send a welcome message to the client
                 output.println("Welcome to the chat, " + username + "!");
+                output.println("Your ID is " + clientId);
 
                 // Broadcast the clients list to all clients
                 server.broadcastClientsList();
 
                 String message;
                 while ((message = input.readLine()) != null) {
-                    if (message.equals("/quit")) {
-                        break;
-                    }
+
                     server.broadcastMessage(username + ": " + message, this);
                 }
 

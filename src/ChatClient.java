@@ -6,9 +6,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class ChatClient {
-
     private JFrame frame;
     private JTextArea chatArea;
     private JTextField messageField;
@@ -54,16 +52,13 @@ public class ChatClient {
                 String message = messageField.getText();
                 if (!message.isEmpty()) {
                     sendMessage(message);
-                    }
-                    messageField.setText(""); // clear the text from the JTextField
-
+                }
+                messageField.setText(""); // clear the text from the JTextField
             });
             messagePanel.add(sendButton, BorderLayout.EAST);
             frame.add(panel); // add the panel to the JFrame
             frame.setVisible(true); // set the JFrame to be visible
             panel.add(messagePanel, BorderLayout.SOUTH);
-            frame.add(panel); // add the panel to the JFrame
-            frame.setVisible(true); // set the JFrame to be visible
             // Connect to the server and start listening for messages
             try {
                 Socket socket = new Socket("localhost", 9000); // Connect to the server on localhost:9000
@@ -72,21 +67,17 @@ public class ChatClient {
                 output.println(username); // Send the username to the server
                 output.println(clientId); //print out UUID
 
-
                 // start a new thread to listen for messages from the server
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            while (true) {
-                                String message = input.readLine();
-                                if (message != null) {
-                                    chatArea.append(message + "\n");
-                                }
+                new Thread(() -> {
+                    try {
+                        while (true) {
+                            String message = input.readLine();
+                            if (message != null) {
+                                chatArea.append(message + "\n");
                             }
-                        } catch (IOException e) {
-                            System.out.println("Error reading input: " + e.getMessage());
                         }
+                    } catch (IOException e) {
+                        System.out.println("Error reading input: " + e.getMessage());
                     }
                 }).start();
             } catch (IOException e) {
