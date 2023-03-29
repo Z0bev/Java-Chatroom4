@@ -14,7 +14,7 @@ public class ChatClient {
     private BufferedReader input;
     private String username;
     private UUID clientId;
-    private JComboBox<String> clientList;
+    
 
     public ChatClient() {
         // Prompt the user for a username
@@ -29,6 +29,7 @@ public class ChatClient {
                 validUsername = true;
             }
         }
+
 
         if (validUsername) {
             // Generate a UUID for the client
@@ -80,6 +81,9 @@ public class ChatClient {
                         System.out.println("Error reading input: " + e.getMessage());
                     }
                 }).start();
+
+                
+
             } catch (IOException e) {
                 System.out.println("Error connecting to server: " + e.getMessage());
                 JOptionPane.showMessageDialog(frame, "Error connecting to server. Exiting...", "Error", JOptionPane.ERROR_MESSAGE);
@@ -87,13 +91,16 @@ public class ChatClient {
             }
         }
     }
-
+    
     // Method to send a message to the server
     private void sendMessage(String message) {
         if (!message.isEmpty()) {
             output.println(message);
+
         }
     }
+
+    
 
     // Main method to start the chat client
     public static void main(String[] args) {

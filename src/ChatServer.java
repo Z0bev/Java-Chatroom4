@@ -11,7 +11,7 @@ public class ChatServer {
     public ChatServer() {
         clientHandlers = new ArrayList<>();
     }
-
+    // broadcast message method and commands
     private void broadcastMessage(String message, ClientHandler sender) {
         String senderMessage = message.split(":")[1].trim();
         if (senderMessage.startsWith("/")) {
@@ -22,6 +22,12 @@ public class ChatServer {
                     clientHandlers.remove(sender);
                     broadcastClientsList();
                     sender.sendMessage("QUIT");
+                    // close the client socket
+                    try {
+                        sender.socket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     return;
                 }
                 if (command.equals("list")) {
@@ -52,7 +58,7 @@ public class ChatServer {
             }
         }
     }
-
+    
     private void broadcastClientsList() {
         String clients = "ACTIVE USERS:";
         for (ClientHandler client : clientHandlers) {
